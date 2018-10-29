@@ -1,7 +1,7 @@
 <template>
   <a-layout-content :style="{ margin: '24px 16px', padding: '24px', background: '#fff', minHeight: '280px' }">
     <a-table :columns="columns"
-      :rowKey="record => record.login.uuid"
+      :rowKey="record => record.id"
       :dataSource="data"
       :pagination="pagination"
       :loading="loading"
@@ -14,27 +14,25 @@
   </a-layout-content>
 </template>
 <script>
-import axios from 'axios'
+import { userList } from '@/api/user'
 const columns = [
   {
-    title: 'Name',
-    dataIndex: 'name',
+    title: 'openid',
+    dataIndex: 'id',
     sorter: true,
-    width: '20%',
-    scopedSlots: { customRender: 'name' }
-  },
-  {
-    title: 'Gender',
-    dataIndex: 'gender',
-    filters: [
-      { text: 'Male', value: 'male' },
-      { text: 'Female', value: 'female' }
-    ],
     width: '20%'
   },
   {
-    title: 'Email',
-    dataIndex: 'email'
+    title: '姓名',
+    dataIndex: 'name',
+    sorter: true,
+    width: '20%'
+  },
+  {
+    title: '性别',
+    dataIndex: 'gender',
+    // filters: [{ text: '男', value: '1' }, { text: '女', value: '2' }],
+    width: '20%'
   }
 ]
 
@@ -45,7 +43,10 @@ export default {
   data() {
     return {
       data: [],
-      pagination: {},
+      pagination: {
+        current: 1,
+        pageSize: 20
+      },
       loading: false,
       columns
     }
@@ -67,22 +68,10 @@ export default {
     fetch(params = {}) {
       // console.log('params:', params)
       this.loading = true
-      axios({
-        url: 'https://randomuser.me/api',
-        method: 'get',
-        data: {
-          results: 10,
-          ...params
-        },
-        type: 'json'
-      }).then(data => {
-        const pagination = { ...this.pagination }
-        // Read total count from server
-        // pagination.total = data.totalCount;
-        pagination.total = 200
+      userList().then(resp => {
+        console.log(resp.data)
+        this.data = resp.data.users
         this.loading = false
-        this.data = data.results
-        this.pagination = pagination
       })
     }
   }

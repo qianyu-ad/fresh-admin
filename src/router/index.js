@@ -1,8 +1,6 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 import routes from './routers'
-import { getToken } from '../utils/token'
-// import { getToken } from '@/utils/token'
 
 Vue.use(Router)
 
