@@ -60,6 +60,36 @@ export default [
     ]
   },
   {
+    path: '/category',
+    component: Layout,
+    redirect: '/category/index',
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/category/index.vue'),
+        name: 'category',
+        meta: {
+          keepAlive: true
+        }
+      }
+    ]
+  },
+  {
+    path: '/tag',
+    component: Layout,
+    redirect: '/tag/index',
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/tag/index.vue'),
+        name: 'tag',
+        meta: {
+          keepAlive: true
+        }
+      }
+    ]
+  },
+  {
     path: '*',
     redirect: '/'
   }
