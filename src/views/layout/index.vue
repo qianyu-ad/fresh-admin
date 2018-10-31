@@ -61,7 +61,6 @@ export default {
   },
   methods: {
     handleMenu(item) {
-      // console.log(item.key)
       this.$router.push({ name: item.key })
     }
   }

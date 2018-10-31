@@ -18,7 +18,7 @@ export const loginApi = (username, password) => {
  */
 export const logoutApi = () => {
   return request({
-    url: '/api/logout',
+    url: '/api/admin/logout',
     method: 'get'
   })
 }

@@ -7,9 +7,11 @@
       :loading="loading"
       @change="handleTableChange"
     >
-      <template slot="name" slot-scope="name">
-        {{name.first}} {{name.last}}
-      </template>
+    <span slot="index" slot-scope="text, record, index">{{ index + 1 }}</span>
+    <span slot="gender" slot-scope="text">
+      <template v-if="text == 1">男</template>
+      <template v-else>女</template>
+    </span>
     </a-table>
   </a-layout-content>
 </template>
@@ -17,21 +19,25 @@
 import { userList } from '@/api/user'
 const columns = [
   {
+    title: '#',
+    key: 'index',
+    scopedSlots: { customRender: 'index' },
+    width: '10%'
+  },
+  {
     title: 'openid',
     dataIndex: 'id',
-    sorter: true,
     width: '20%'
   },
   {
     title: '姓名',
     dataIndex: 'name',
-    sorter: true,
     width: '20%'
   },
   {
     title: '性别',
     dataIndex: 'gender',
-    // filters: [{ text: '男', value: '1' }, { text: '女', value: '2' }],
+    scopedSlots: { customRender: 'gender' },
     width: '20%'
   }
 ]
@@ -53,7 +59,6 @@ export default {
   },
   methods: {
     handleTableChange(pagination, filters, sorter) {
-      // console.log(pagination)
       const pager = { ...this.pagination }
       pager.current = pagination.current
       this.pagination = pager
@@ -66,10 +71,8 @@ export default {
       })
     },
     fetch(params = {}) {
-      // console.log('params:', params)
       this.loading = true
       userList().then(resp => {
-        console.log(resp.data)
         this.data = resp.data.users
         this.loading = false
       })

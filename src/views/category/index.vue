@@ -1,10 +1,10 @@
 <template>
   <a-layout-content :style="{ margin: '24px 16px', padding: '24px', background: '#fff', minHeight: '280px' }">
-    <a-button class="editable-add-btn" @click="showModal">添加</a-button>
+    <a-button class="editable-add-btn" @click="showModal(-1)">添加</a-button>
     <a-modal
-      title="添加分类"
-      @ok="handleOk"
-      @cancel="handleCancel"
+      :title="ModalParam.title"
+      @ok="handleModalOk"
+      @cancel="handleModalCancel"
       :visible="visible"
       :confirmLoading="confirmLoading"
       :cancelText="ModalParam.cancelText"
@@ -16,10 +16,12 @@
       <span slot="index" slot-scope="text, record, index">{{ index + 1 }}</span>
       <span slot="name" slot-scope="name">{{ name }}</span>
       <template slot="action" slot-scope="text, record">
+        <a href="javascript:;" @click="showModal(record.id)">更新</a>
         <a-popconfirm
           v-if="data.length"
           title="确定要删除吗?"
           @confirm="() => handleDel(record.id)">
+          <a-divider type="vertical" />
           <a href="javascript:;">删除</a>
         </a-popconfirm>
       </template>
@@ -31,27 +33,37 @@ const columns = [
   {
     title: '#',
     key: 'index',
-    scopedSlots: { customRender: 'index' }
+    scopedSlots: { customRender: 'index' },
+    width: '10%'
   },
   {
     title: '名称',
-    dataIndex: 'name'
+    dataIndex: 'name',
+    width: '70%'
   },
   {
     title: '操作',
     key: 'action',
-    scopedSlots: { customRender: 'action' }
+    scopedSlots: { customRender: 'action' },
+    width: '20%'
   }
 ]
-import { categoryList, createCategory, deleteCategory } from '@/api/article'
+import {
+  categoryList,
+  createCategory,
+  updateCategory,
+  deleteCategory
+} from '@/api/article'
 export default {
   components: {},
   data() {
     return {
       ModalParam: {
+        title: '新增分类',
         name: '',
         okText: '确认',
-        cancelText: '取消'
+        cancelText: '取消',
+        action_id: -1 // 操作id
       },
       visible: false,
       confirmLoading: false,
@@ -71,8 +83,34 @@ export default {
         }
       })
     },
-    handleUpdate(key, name) {
+    handleAdd(name) {
+      // 新增分类
+      this.ModalParam.title = '新增分类'
+      createCategory(name).then(resp => {
+        if (resp.data.status === 200) {
+          this.fetch()
+          this.$message.success(resp.data.msg)
+        } else {
+          this.$message.error(resp.data.msg)
+        }
+        this.visible = false
+        this.confirmLoading = false
+        this.ModalParam.name = ''
+      })
+    },
+    handleUpdate(name) {
       // 更新分类
+      updateCategory(this.ModalParam.action_id, name).then(resp => {
+        if (resp.data.status === 200) {
+          this.fetch()
+          this.$message.success(resp.data.msg)
+        } else {
+          this.$message.error(resp.data.msg)
+        }
+        this.visible = false
+        this.confirmLoading = false
+        this.ModalParam.name = ''
+      })
     },
     handleDel(key) {
       // 删除分类
@@ -85,30 +123,33 @@ export default {
         }
       })
     },
-    showModal() {
+    showModal(id) {
       // 显示弹窗
+      this.ModalParam.action_id = id
+
+      if (id < 0) {
+        this.ModalParam.title = '新增分类'
+      } else {
+        this.ModalParam.title = '更新分类'
+      }
       this.visible = true
     },
-    handleOk(e) {
+    handleModalOk(e) {
       // 添加分类
       const name = this.ModalParam.name.trim()
       if (name === '') {
+        this.$message.error('名称不能为空')
         return
       }
       this.confirmLoading = true
-      createCategory(name).then(resp => {
-        if (resp.data.status === 200) {
-          this.fetch()
-          this.$message.success(resp.data.msg)
-        } else {
-          this.$message.error(resp.data.msg)
-        }
-        this.visible = false
-        this.confirmLoading = false
-      })
+      if (this.ModalParam.action_id < 0) {
+        this.handleAdd(name)
+      } else {
+        this.handleUpdate(name)
+      }
     },
-    handleCancel(e) {
-      console.log('Clicked cancel button')
+    handleModalCancel(e) {
+      // 取消
       this.visible = false
     }
   }
